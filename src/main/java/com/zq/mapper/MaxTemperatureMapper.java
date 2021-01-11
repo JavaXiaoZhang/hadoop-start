@@ -3,18 +3,15 @@ package com.zq.mapper;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.Mapper;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 
-public class MaxTemperatureMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
-
+public class MaxTemperatureMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
     private static final int MISSING = 9999;
 
-    public void map(LongWritable longWritable, Text text, OutputCollector<Text, IntWritable> outputCollector, Reporter reporter) throws IOException {
+    @Override
+    protected void map(LongWritable key, Text text, Context context) throws IOException, InterruptedException {
         String line = text.toString();
         String year = line.substring(15, 19);
         int airTemperature;
@@ -25,7 +22,7 @@ public class MaxTemperatureMapper extends MapReduceBase implements Mapper<LongWr
         }
         String quality = line.substring(92, 93);
         if (airTemperature != MISSING && quality.matches("[01459]")) {
-            outputCollector.collect(new Text(year), new IntWritable(airTemperature));
+            context.write(new Text(year), new IntWritable(airTemperature));
         }
     }
 }
